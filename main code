@@ -1,0 +1,128 @@
+#include <avr/io.h>
+
+#include <avr/interrupt.h>
+
+
+
+int ca = 0, pa = 0, pb = 0, cb = 0, rotation = 0, CW, ACW;
+
+float angle;
+
+String dir = "";
+
+int main() {
+
+  init();
+
+  
+
+  DDRH |= (1 << PH5);
+
+  TCCR4A = 0xAA;
+
+  TCCR4B = 0x19;
+
+  ICR4 = 100;
+
+
+
+  DDRD = 0x00;
+
+  PORTD = 0xff;
+
+
+
+  PCICR = 0x01;
+
+  PCMSK0 = 0x03;
+
+
+
+  sei();
+
+  Serial.begin(9600);
+
+
+
+
+
+  while (1) {
+
+    OCR4C=20;
+
+    Serial.print("Rotation =");   Serial.print(rotation);
+
+    Serial.print(" Direction ="); Serial.print(dir);
+
+    Serial.print(" Angle ="); Serial.println(angle);
+
+
+
+  }
+
+  return 0;
+
+}
+
+
+
+ISR(PCINT0_vect) {
+
+  ca = ~PIND & 0X01;
+
+  cb = ~PIND & 0X02;
+
+
+
+  if (ca != pa) {
+
+    if (ca != cb) {
+
+      rotation++;
+
+
+
+    }
+
+    else {
+
+      rotation--;
+
+      dir = "ACW";
+
+    }
+
+  }
+
+  if (cb != pb) {
+
+    if (cb != ca) {
+
+      rotation--;
+
+
+
+    }
+
+    else {
+
+      rotation++;
+
+      dir = "CW";
+
+    }
+
+  }
+
+  angle = (((rotation * 3) / 20));
+
+
+
+  pa = ca;
+
+  pb = cb;
+
+
+
+}
+
